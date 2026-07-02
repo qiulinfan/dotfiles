@@ -1,0 +1,36 @@
+[user]
+	name = Qiulin
+	email = rynnefan@gmail.com
+
+[core]
+	editor = nvim
+	autocrlf = input
+
+[pull]
+	rebase = false
+
+[merge]
+	conflictstyle = zdiff3
+
+[init]
+	defaultBranch = main
+
+[push]
+	default = current
+	autoSetupRemote = true
+
+[fetch]
+	prune = true
+
+[rerere]
+	enabled = true
+
+[color]
+	ui = auto
+
+[alias]
+	co = checkout
+	br = branch
+	ci = commit
+	st = status
+	lg = log --oneline --graph --decorate --all

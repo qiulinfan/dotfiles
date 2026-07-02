@@ -12,6 +12,9 @@ if status is-interactive
     # Commands to run in interactive sessions can go here
 end
 
+set -gx EDITOR nvim
+set -gx VISUAL nvim
+
 
 function accept_or_expand --description "Smart Tab: expand on first, accept on second"
     set cursor_pos (commandline -C)
@@ -36,33 +39,9 @@ bind \c\z undo
 
 
 # ===============================
-# Conda 初始化（fish 版本）
-# ===============================
-set -gx PATH /home/qiulin/miniconda3/bin $PATH
-set -Ux CONDA_EXE /home/qiulin/miniconda3/bin/conda
-set -Ux _CONDA_ROOT /home/qiulin/miniconda3
-set -Ux CONDA_SHLVL 0
-set -Ux CONDA_PREFIX ""
-set -Ux CONDA_DEFAULT_ENV ""
-set -Ux CONDA_PROMPT_MODIFIER ""
-# 添加 conda 初始化脚本到 config.fish
-source /home/qiulin/miniconda3/etc/fish/conf.d/conda.fish
-eval (/home/qiulin/miniconda3/bin/conda shell.fish hook)
-
-
-# ===============================
 # alias
 # ===============================
 alias ls='ls -G'
-
-# ===============================
-# Emacs 快捷函数
-# ===============================
-function e
-    command emacs $argv &
-end
-
-
 
 
 function emoji
@@ -72,6 +51,7 @@ function emoji
         printf "\U0001F600\n"
     end
 end
+
 
 function fish_prompt
     set emoji_output (emoji)
@@ -83,26 +63,72 @@ function fish_prompt
     echo -n " \$ "
 end
 
+
 set -gx CXX /usr/bin/g++-13
 set -gx CC /usr/bin/gcc-13
 function g++ --wraps g++-13
     command g++-13 $argv
 end
-
 function gcc --wraps gcc-13
     command gcc-13 $argv
 end
 
-# =============================== boost library ===============================
-# Boost + GCC 正确 include path
-#set -Ux CPLUS_INCLUDE_PATH \
-#    /usr/lib/gcc/x86_64-linux-gnu/13/include \
-#    /usr/include/x86_64-linux-gnu \
-#    /usr/include
-
-#set -Ux LIBRARY_PATH /lib/x86_64-linux-gnu $LIBRARY_PATH
-#set -Ux LD_LIBRARY_PATH /lib/x86_64-linux-gnu $LD_LIBRARY_PATH
-# =============================== end boost library ===============================
 
 
-alias typora="/mnt/c/Users/qiulin/AppData/Local/Programs/Typora/Typora.exe"
+############################################
+# Fish syntax highlighting (Nord)
+############################################
+
+# Commands
+set -g fish_color_command 81A1C1
+
+# Command options (-a, --help)
+set -g fish_color_option 88C0D0
+
+# Parameters / filenames
+set -g fish_color_param D8DEE9
+
+# Quoted strings
+set -g fish_color_quote A3BE8C
+
+# Escape sequences
+set -g fish_color_escape B48EAD
+
+# Operators (| && ;)
+set -g fish_color_operator 81A1C1
+
+# Keywords (if, for, while...)
+set -g fish_color_keyword 81A1C1
+
+# Redirections (> >> <)
+set -g fish_color_redirection 88C0D0
+
+# Valid paths
+set -g fish_color_valid_path A3BE8C
+
+# Autosuggestion
+set -g fish_color_autosuggestion 616E88
+
+# Search match
+set -g fish_color_search_match --background=3B4252
+
+# Selection
+set -g fish_color_selection --background=434C5E
+
+# Errors
+set -g fish_color_error BF616A
+
+# Comments
+set -g fish_color_comment 616E88
+
+# Current working directory
+set -g fish_color_cwd 88C0D0
+
+# Root user cwd
+set -g fish_color_cwd_root BF616A
+
+# End of line after unfinished quote
+set -g fish_color_end D08770
+
+# Normal text
+set -g fish_color_normal D8DEE9

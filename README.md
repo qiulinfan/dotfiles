@@ -56,7 +56,7 @@ git remote set-url origin git@github.com:qiulinfan/dotfiles.git
 也可以分步执行：
 
 ```bash
-./initial.sh --install-apt          # apt 安装 git, fish, vim, gcc/g++-13, gdb, fzf, rg, clipboard tools 等
+./initial.sh --install-apt          # apt 安装 git, fish, vim, gcc/g++-13, gdb, fzf, rg, clipboard tools 等基础包
 ./initial.sh --install-nvim         # 安装最新版 Neovim 到 /opt，并链接到 /usr/local/bin/nvim
 ./initial.sh --install-editor-deps  # 安装 vim-plug, Node.js 20, yarn, tree-sitter-cli, lazygit, bottom/btm
 ./initial.sh --install-fonts        # 安装 JetBrainsMono Nerd Font
@@ -65,6 +65,8 @@ git remote set-url origin git@github.com:qiulinfan/dotfiles.git
 ```
 
 `--install-vim-deps` 是 `--install-editor-deps` 的兼容别名。
+
+注意：`npm` 不放在 `--install-apt` 里安装。脚本会在 `--install-editor-deps` 阶段通过 NodeSource 安装 Node.js 20，并使用它自带的 `npm`，避免 Ubuntu 自带 `npm` 和 NodeSource `nodejs` 的依赖冲突。
 
 查看帮助：
 

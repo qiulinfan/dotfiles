@@ -115,7 +115,6 @@ apt_install_if_available() {
     gdb \
     git \
     make \
-    npm \
     openssh-client \
     python3 \
     ripgrep \
@@ -157,6 +156,7 @@ install_neovim() {
   echo "Neovim installed: $(command -v nvim)"
   nvim --version | head -n 1
   nvim --headless --clean +'lua print(vim.env.VIMRUNTIME)' +qa
+  echo
 }
 
 install_editor_dependencies() {
@@ -167,10 +167,14 @@ install_editor_dependencies() {
     "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
 
   if command -v apt-get >/dev/null 2>&1; then
-    echo "Installing Node.js 20 from NodeSource..."
-    sudo apt-get remove -y libnode-dev libnode72 nodejs || true
-    curl -fsSL "https://deb.nodesource.com/setup_20.x" | sudo -E bash -
-    sudo apt-get install -y nodejs
+    if command -v node >/dev/null 2>&1 && [[ "$(node --version)" == v20.* ]] && command -v npm >/dev/null 2>&1; then
+      echo "Node.js 20 and npm are already installed."
+    else
+      echo "Installing Node.js 20 from NodeSource..."
+      sudo apt-get remove -y libnode-dev libnode72 nodejs || true
+      curl -fsSL "https://deb.nodesource.com/setup_20.x" | sudo -E bash -
+      sudo apt-get install -y nodejs
+    fi
   fi
 
   if command -v npm >/dev/null 2>&1; then

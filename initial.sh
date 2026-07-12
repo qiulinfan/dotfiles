@@ -7,6 +7,7 @@ GIT_SSH_EMAIL="rynnefan@umich.edu"
 INSTALL_APT=false
 INSTALL_NVIM=false
 INSTALL_EDITOR_DEPS=false
+INSTALL_BLOG_DEPS=false
 INSTALL_NERD_FONT=false
 SETUP_SSH_KEY=false
 SET_DEFAULT_FISH=false
@@ -24,6 +25,7 @@ Options:
   --install-nvim       Install latest Neovim release to /opt and /usr/local/bin/nvim.
   --install-editor-deps Install Vim/Neovim dependencies: vim-plug, Node.js, tree-sitter, lazygit, bottom.
   --install-vim-deps   Alias for --install-editor-deps.
+  --install-blog-deps  Install qlblog dependencies: Node.js 20, Corepack, pnpm 9.14.4, make.
   --install-fonts      Install JetBrainsMono Nerd Font for AstroNvim icons.
   --ssh-key            Create an ed25519 GitHub SSH key if it does not exist.
   --set-fish-shell     Add fish to /etc/shells and set it as the default login shell.
@@ -33,6 +35,7 @@ Options:
 Examples:
   ./initial.sh
   ./initial.sh --install-apt --install-nvim --install-editor-deps
+  ./initial.sh --install-blog-deps
   ./initial.sh --all
 EOF
 }
@@ -48,6 +51,9 @@ for arg in "$@"; do
     --install-editor-deps|--install-vim-deps)
       INSTALL_EDITOR_DEPS=true
       ;;
+    --install-blog-deps)
+      INSTALL_BLOG_DEPS=true
+      ;;
     --install-fonts)
       INSTALL_NERD_FONT=true
       ;;
@@ -61,6 +67,7 @@ for arg in "$@"; do
       INSTALL_APT=true
       INSTALL_NVIM=true
       INSTALL_EDITOR_DEPS=true
+      INSTALL_BLOG_DEPS=true
       INSTALL_NERD_FONT=true
       SETUP_SSH_KEY=true
       SET_DEFAULT_FISH=true
@@ -159,12 +166,8 @@ install_neovim() {
   echo
 }
 
-install_editor_dependencies() {
+install_nodejs_20() {
   need_cmd curl
-
-  echo "Installing vim-plug..."
-  curl -fLo "$HOME/.vim/autoload/plug.vim" --create-dirs \
-    "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
 
   if command -v apt-get >/dev/null 2>&1; then
     if command -v node >/dev/null 2>&1 && [[ "$(node --version)" == v20.* ]] && command -v npm >/dev/null 2>&1; then
@@ -175,7 +178,20 @@ install_editor_dependencies() {
       curl -fsSL "https://deb.nodesource.com/setup_20.x" | sudo -E bash -
       sudo apt-get install -y nodejs
     fi
+  elif ! command -v node >/dev/null 2>&1 || [[ "$(node --version)" != v20.* ]] || ! command -v npm >/dev/null 2>&1; then
+    echo "Node.js 20 and npm are required; automatic installation currently supports apt-based systems." >&2
+    exit 1
   fi
+}
+
+install_editor_dependencies() {
+  need_cmd curl
+
+  echo "Installing vim-plug..."
+  curl -fLo "$HOME/.vim/autoload/plug.vim" --create-dirs \
+    "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
+
+  install_nodejs_20
 
   if command -v npm >/dev/null 2>&1; then
     sudo npm install -g yarn tree-sitter-cli@0.22.6
@@ -195,6 +211,33 @@ install_editor_dependencies() {
   else
     echo "snap not found; skipping lazygit and bottom installation."
   fi
+}
+
+install_blog_dependencies() {
+  install_nodejs_20
+  need_cmd npm
+
+  if command -v apt-get >/dev/null 2>&1 && ! command -v make >/dev/null 2>&1; then
+    echo "Installing GNU Make..."
+    sudo apt-get update
+    sudo apt-get install -y make
+  fi
+  need_cmd make
+
+  if ! command -v corepack >/dev/null 2>&1; then
+    echo "Installing Corepack..."
+    sudo npm install -g corepack@0.34.6
+  fi
+
+  echo "Enabling Corepack and preparing pnpm 9.14.4..."
+  sudo corepack enable
+  corepack pnpm@9.14.4 --version
+
+  echo "qlblog dependencies are ready:"
+  echo "  $(node --version)"
+  echo "  npm $(npm --version)"
+  echo "  pnpm $(corepack pnpm@9.14.4 --version)"
+  echo "  $(make --version | head -n 1)"
 }
 
 install_nerd_font() {
@@ -338,6 +381,7 @@ link_dotfiles() {
 $INSTALL_APT && apt_install_if_available
 $INSTALL_NVIM && install_neovim
 $INSTALL_EDITOR_DEPS && install_editor_dependencies
+$INSTALL_BLOG_DEPS && install_blog_dependencies
 $INSTALL_NERD_FONT && install_nerd_font
 $SETUP_SSH_KEY && setup_ssh_key
 $SET_DEFAULT_FISH && set_default_fish_shell

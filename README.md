@@ -59,6 +59,7 @@ git remote set-url origin git@github.com:qiulinfan/dotfiles.git
 ./initial.sh --install-apt          # apt 安装 git, fish, vim, gcc/g++-13, gdb, fzf, rg, clipboard tools 等基础包
 ./initial.sh --install-nvim         # 安装最新版 Neovim 到 /opt，并链接到 /usr/local/bin/nvim
 ./initial.sh --install-editor-deps  # 安装 vim-plug, Node.js 20, yarn, tree-sitter-cli, lazygit, bottom/btm
+./initial.sh --install-blog-deps    # 安装 qlblog 所需的 Node.js 20, Corepack, pnpm 9.14.4, make
 ./initial.sh --install-fonts        # 安装 JetBrainsMono Nerd Font
 ./initial.sh --ssh-key              # 创建 ~/.ssh/id_ed25519，并打印 public key
 ./initial.sh --set-fish-shell       # 把 fish 加入 /etc/shells，并设为默认 shell
@@ -66,7 +67,27 @@ git remote set-url origin git@github.com:qiulinfan/dotfiles.git
 
 `--install-vim-deps` 是 `--install-editor-deps` 的兼容别名。
 
-注意：`npm` 不放在 `--install-apt` 里安装。脚本会在 `--install-editor-deps` 阶段通过 NodeSource 安装 Node.js 20，并使用它自带的 `npm`，避免 Ubuntu 自带 `npm` 和 NodeSource `nodejs` 的依赖冲突。
+注意：`npm` 不放在 `--install-apt` 里安装。脚本会在 `--install-editor-deps` 或 `--install-blog-deps` 阶段通过 NodeSource 安装 Node.js 20，并使用它自带的 `npm`，避免 Ubuntu 自带 `npm` 和 NodeSource `nodejs` 的依赖冲突。
+
+## qlblog
+
+在新 Ubuntu/WSL 机器上安装博客构建依赖：
+
+```bash
+cd ~/dotfiles
+./initial.sh --install-blog-deps
+```
+
+然后克隆并初始化博客：
+
+```bash
+git clone git@github.com:qiulinfan/qlblog.git ~/qlblog
+cd ~/qlblog
+make blog-install
+make blog-dev
+```
+
+本地预览地址为 <http://localhost:4321/qlblog/>。依赖版本由 `qlblog/site/package.json` 和 `pnpm-lock.yaml` 固定；日常不需要全局安装 Astro、Fuwari、Svelte 或 Tailwind。
 
 查看帮助：
 

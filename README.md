@@ -1,11 +1,12 @@
 # Dotfiles
 
-这里保存 fish、Vim、Neovim 和 Git 的个人配置。
+这里保存 Kitty、fish、Vim、Neovim 和 Git 的个人配置。
 
 这个仓库通过软链接应用配置：
 
 ```text
 ~/.config/fish -> ~/dotfiles/fish
+~/.config/kitty -> ~/dotfiles/kitty
 ~/.config/nvim -> ~/dotfiles/nvim
 ~/.vimrc       -> ~/dotfiles/vim/.vimrc
 ~/.gitconfig   -> ~/dotfiles/git/.gitconfig
@@ -56,13 +57,14 @@ git remote set-url origin git@github.com:qiulinfan/dotfiles.git
 也可以分步执行：
 
 ```bash
-./initial.sh --install-apt          # apt 安装 git, fish, vim, gcc/g++-13, gdb, fzf, rg, clipboard tools 等基础包
+./initial.sh --install-apt          # apt 安装 git, kitty, fish, vim, gcc/g++-13, gdb, fzf, rg, clipboard tools 等基础包
 ./initial.sh --install-nvim         # 安装最新版 Neovim 到 /opt，并链接到 /usr/local/bin/nvim
 ./initial.sh --install-editor-deps  # 安装 vim-plug, Node.js 20, yarn, tree-sitter-cli, lazygit, bottom/btm
 ./initial.sh --install-blog-deps    # 安装 qlblog 所需的 Node.js 20, Corepack, pnpm 9.14.4, make
 ./initial.sh --install-fonts        # 安装 JetBrainsMono Nerd Font
 ./initial.sh --ssh-key              # 创建 ~/.ssh/id_ed25519，并打印 public key
 ./initial.sh --set-fish-shell       # 把 fish 加入 /etc/shells，并设为默认 shell
+./initial.sh --set-default-terminal # 把 Kitty 设为系统和桌面默认终端
 ```
 
 `--install-vim-deps` 是 `--install-editor-deps` 的兼容别名。
@@ -111,6 +113,17 @@ sudo chsh -s "$(command -v fish)" "$USER"
 
 执行完以后，重新打开终端才会生效。
 
+## Kitty
+
+Kitty 配置在 `kitty/kitty.conf`。默认配置使用 JetBrainsMono Nerd Font；安装并应用配置：
+
+```bash
+./initial.sh --install-apt --install-fonts --set-default-terminal
+```
+
+`--install-apt` 会通过 apt 安装 Kitty，`--set-default-terminal` 会更新
+`x-terminal-emulator`，并在 KDE 桌面上把 Kitty 设为默认终端。
+
 ## Neovim
 
 Neovim 配置在 `nvim/`，基于 AstroNvim。
@@ -146,7 +159,7 @@ vim
 ## 检查
 
 ```bash
-ls -l ~/.config/fish ~/.config/nvim ~/.vimrc ~/.gitconfig
+ls -l ~/.config/fish ~/.config/kitty ~/.config/nvim ~/.vimrc ~/.gitconfig
 command -v nvim && nvim --version | head -n 1
 git config --global --list
 ```

@@ -1,5 +1,5 @@
 [user]
-	name = Qiulin
+	name = bluesamoyed77
 	email = rynnefan@gmail.com
 
 [core]
@@ -34,3 +34,8 @@
 	ci = commit
 	st = status
 	lg = log --oneline --graph --decorate --all
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true

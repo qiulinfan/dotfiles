@@ -11,6 +11,7 @@ INSTALL_BLOG_DEPS=false
 INSTALL_NERD_FONT=false
 SETUP_SSH_KEY=false
 SET_DEFAULT_FISH=false
+SET_DEFAULT_TERMINAL=false
 LINK_ONLY=true
 
 usage() {
@@ -21,14 +22,15 @@ By default, this script only links dotfiles into the expected locations.
 Installation steps are opt-in because they use sudo, download binaries, create SSH keys, or change the login shell.
 
 Options:
-  --install-apt         Install common Ubuntu/WSL packages with apt.
+  --install-apt         Install common Ubuntu/WSL packages with apt, including Kitty.
   --install-nvim       Install latest Neovim release to /opt and /usr/local/bin/nvim.
   --install-editor-deps Install Vim/Neovim dependencies: vim-plug, Node.js, tree-sitter, lazygit, bottom.
   --install-vim-deps   Alias for --install-editor-deps.
   --install-blog-deps  Install qlblog dependencies: Node.js 20, Corepack, pnpm 9.14.4, make.
-  --install-fonts      Install JetBrainsMono Nerd Font for AstroNvim icons.
+  --install-fonts      Install JetBrainsMono Nerd Font for Kitty and AstroNvim.
   --ssh-key            Create an ed25519 GitHub SSH key if it does not exist.
   --set-fish-shell     Add fish to /etc/shells and set it as the default login shell.
+  --set-default-terminal Set Kitty as the system and desktop default terminal.
   --all                Run all installation steps, then link dotfiles.
   -h, --help           Show this help.
 
@@ -63,6 +65,9 @@ for arg in "$@"; do
     --set-fish-shell)
       SET_DEFAULT_FISH=true
       ;;
+    --set-default-terminal)
+      SET_DEFAULT_TERMINAL=true
+      ;;
     --all)
       INSTALL_APT=true
       INSTALL_NVIM=true
@@ -71,6 +76,7 @@ for arg in "$@"; do
       INSTALL_NERD_FONT=true
       SETUP_SSH_KEY=true
       SET_DEFAULT_FISH=true
+      SET_DEFAULT_TERMINAL=true
       ;;
     -h|--help)
       usage
@@ -121,6 +127,7 @@ apt_install_if_available() {
     gcc-13 \
     gdb \
     git \
+    kitty \
     make \
     openssh-client \
     python3 \
@@ -241,17 +248,29 @@ install_blog_dependencies() {
 }
 
 install_nerd_font() {
-  need_cmd curl
   need_cmd unzip
 
   echo "Installing JetBrainsMono Nerd Font..."
   local font_dir="$HOME/.local/share/fonts/JetBrainsMonoNerdFont"
-  local archive="/tmp/JetBrainsMono.zip"
+  local temp_dir
+  temp_dir="$(mktemp -d)"
+  local archive="$temp_dir/JetBrainsMono.zip"
+  local font_url="https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip"
 
   mkdir -p "$font_dir"
-  curl -fL "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip" -o "$archive"
+
+  if command -v wget >/dev/null 2>&1; then
+    wget -q -O "$archive" "$font_url"
+  elif command -v curl >/dev/null 2>&1; then
+    curl -fL "$font_url" -o "$archive"
+  else
+    echo "wget or curl is required to install fonts." >&2
+    exit 1
+  fi
+
   unzip -o "$archive" -d "$font_dir" >/dev/null
   rm -f "$archive"
+  rmdir "$temp_dir"
 
   if command -v fc-cache >/dev/null 2>&1; then
     fc-cache -f "$font_dir"
@@ -321,6 +340,27 @@ set_default_fish_shell() {
   echo "Open a new terminal session for the default shell change to take effect."
 }
 
+set_default_terminal() {
+  need_cmd kitty
+
+  local kitty_path
+  kitty_path="$(command -v kitty)"
+
+  if command -v update-alternatives >/dev/null 2>&1; then
+    echo "Setting the system terminal alternative to Kitty..."
+    sudo update-alternatives --install \
+      /usr/bin/x-terminal-emulator x-terminal-emulator "$kitty_path" 50
+    sudo update-alternatives --set x-terminal-emulator "$kitty_path"
+  fi
+
+  if command -v kwriteconfig6 >/dev/null 2>&1; then
+    echo "Setting the KDE default terminal to Kitty..."
+    kwriteconfig6 --file kdeglobals --group General --key TerminalApplication kitty
+    kwriteconfig6 --file kdeglobals --group General --key TerminalService kitty.desktop
+  fi
+
+}
+
 backup_path() {
   local target="$1"
   local backup="$target.bak.$(date +%Y%m%d%H%M%S)"
@@ -373,6 +413,7 @@ link_dotfiles() {
   mkdir -p "$CONFIG_DIR"
 
   link_config fish
+  link_config kitty
   link_config nvim
   link_home_file "$DOTFILES_DIR/vim/.vimrc" "$HOME/.vimrc"
   link_home_file "$DOTFILES_DIR/git/.gitconfig" "$HOME/.gitconfig"
@@ -385,6 +426,7 @@ $INSTALL_BLOG_DEPS && install_blog_dependencies
 $INSTALL_NERD_FONT && install_nerd_font
 $SETUP_SSH_KEY && setup_ssh_key
 $SET_DEFAULT_FISH && set_default_fish_shell
+$SET_DEFAULT_TERMINAL && set_default_terminal
 
 link_dotfiles
 
